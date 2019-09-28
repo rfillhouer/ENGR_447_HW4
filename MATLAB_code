@@ -1,0 +1,136 @@
+%% ENGR 447 - 01 Control Systems 
+%  Professor Quintero
+%  Homework # 4
+% 
+%  Produced by Ryan Fillhouer
+
+%% Problem 1 
+
+% Establish Variables and Transfer Function Variable
+s = tf('s')
+
+% Define Transfer Function
+G = 1/(s + 1)
+
+% Plot the Step Response of G
+figure % 1
+step(G)
+title('Unit Step Response of $$\frac{1}{s+1}$$', 'Interpreter', 'latex')
+ylabel('Amplitude')
+xlabel('Time (s)')
+
+% Displays Step Parameters
+stepinfo(G)
+
+
+%% Problem 2
+% Define Transfer Function
+% Determine Poles and Zeroes
+% Compute Inverse Laplace for Time Response
+% Analyze and characterize the response
+% Display all traces onto one plot
+
+
+% Array of Transfer Functions (a) thru (f)
+T = [2/(s+2), 5/((s+3)*(s+6)), 10*(s+7)/((s+10)*(s+20)),...
+    20/(s^2 + 6*s + 144), (s+2)/(s^2 + 9), (s+5)/((s+10)^2)]
+
+% Array of symbollic functions for plotting
+syms t
+tfinal = 3;
+
+t_s = [2/(t+2), 5/((t+3)*(t+6)), 10*(t+7)/((t+10)*(t+20)),...
+    20/(t^2 + 6*t + 144), (t+2)/(t^2 + 9), (t+5)/((t+10)^2)]
+
+i = 'abcdef';
+
+% Initialize Figure 2
+figure % 2
+
+for n=1:6
+    disp('______________________________________________')
+    disp(['T(s)' i(n)])
+  
+    % Poles and Zeroes
+    P = pole(T(n))
+    Z = zero(T(n))
+    
+    if (isempty(Z) == 1)
+        disp('*** No zeros for this Transfer Function ***')
+    end
+    
+    % Separating components to determine dampening
+    Im = all(imag(P));
+    Re = all(real(P));
+    
+    Un = numel(P);
+    U = numel(unique(P));
+    Ur = Un - U; % Checking for repeated poles
+    
+    % Dampening characteristic loop
+    if (Im == 0) && (Re == 1) && (Ur == 0)
+        disp('Overdamped System')    
+    elseif (Im == 1) && (Re == 1)
+        disp('Underdamped System')
+    elseif (Im == 1) && (Re == 0)
+        disp('Undamped System')
+    elseif (Im == 0) && (Ur == 1)
+        disp('Critically Damped System')    
+    else
+        disp('Uncharacterized')
+    end  
+    
+    % Inverse Laplace computaion
+    inv_Laplace = ilaplace(t_s(n))
+    
+    % Time constant computation
+    si = stepinfo(step(T(n)));
+    tc = si.SettlingMax*0.63
+    
+    % Step Response of Transfer Functions (a) thru (f)
+    step(T(n), tfinal)    
+    hold on
+   
+end
+
+% Plot formatting
+title('Step Response of Transfer Functions (a) through (f)')
+ylabel('Amplitude')
+ylim([-0.3 1.05])
+xlabel('Time, t (sec)')
+legend('a', 'b', 'c', 'd', 'e', 'f', 'location', 'northwest')
+hold off
+
+%% Problem 3
+K = 2.09974
+H = K/(s^2 +2*s + K)
+
+figure % 3
+step(H, 7)
+stepinfo(H)
+title('Unit Step Response of $$\frac{K}{s^2 +2*s + K}$$', 'Interpreter', 'latex')
+
+
+%% Problem 4
+
+K1 = 84.419
+b = 55
+
+M = 100*K1/(s^2 + (25+b)*s + 25*b+100*K1)
+figure % 4
+step(M)
+stepinfo(M)
+title('Unit Step Response of $$\frac{100*K}{s^2 + (25+b)*s + 25*b+100*K}$$', 'Interpreter', 'latex')
+
+%% Problem 5
+pole = -5 + 8*j
+jS = imag(pole)
+rS = real(pole)
+theta = atan(jS/rS)
+zeta = cos(theta)
+wn = sqrt(jS^2 + rS^2)
+
+C = wn^2/(s^2 + 2*zeta*wn*s + wn^2)
+
+% C = 7921/(s^2 + 94.3398*s + 7921)
+stepinfo(C)
